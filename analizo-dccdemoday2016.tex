@@ -24,143 +24,202 @@ Teoria e Prática.}
 
 \section{Introdução}
 
-Nós apresentamos o Analizo, um conjunto de ferramentas para análise de código-fonte
-e visualização, desenvolvida com os objetivos de ter suporte a múltiplas linguagens,
-ser software livre, e ser extensível.
+Será apresentado o Analizo, um conjunto de ferramentas para
+análise de código-fonte e visualização, desenvolvido tendo como requisitos
+suportar múltiplas linguagens de programação, ser software livre, ser extensível e
+que seja capaz de lidar com código-fonte não mais compilável.
 
-Um outro requisito é que seja capaz de lidar com código-fonte que não compila mais.
-Por exemplo, código-fonte com erro de sintaxe ou que referenciam bibliotecas não mais
-disponíveis, ou que usa bibliotecas que mudou a API. Isto é importante para poder analisar
-código legado em estudos sobre evolução de software.
+Este último requisito permite analisar código-fonte com erros de sintaxe, com
+referências a bibliotecas não mais disponíveis, ou que usem bibliotecas com
+mudanças de API em versões mais recentes. Isto é importante especialmente ao
+analisar código-fonte legado em estudos sobre evolução de software.
 
 \section{Arquitetura}
 
-A arquitetura do Analizo apresentada na Figura \ref{arquitetura-analizo},
-usando {\it Layered Style} \cite{Clements2002}. Cada camada no diagrama usa
-apenas os serviços oferecidos pela camada diretamente abaixo.
+A arquitetura do Analizo é apresentada na Figura \ref{arquitetura-analizo}
+através de uma representação do tipo {\it Layered Style} \cite{Clements2002},
+onde cada camada no diagrama usa apenas os serviços oferecidos pela camada
+diretamente abaixo dela.
 
 \begin{figure}[h]
 \center
-\includegraphics[scale=0.4]{analizo-architecture.png}
+\includegraphics[scale=0.3]{analizo-architecture.png}
 \caption{Arquitetura do Analizo, usando Layered Style \cite{Clements2002}}
 \label{arquitetura-analizo}
 \end{figure}
 
-O {\it Core} contém as estruturas de dados usadas para armazenar informações
-a respeito do código-fonte sendo analisado, como a lista de módulos, elementos
-dentro de cada módulo (atributos, variáveis, métodos, funções), informações de
-depdendencia (chamada, herança, etc). Esta camada implementa a maior parte da lógica
-de negócio do Analizo, e não depende de nenhuma outra camada.
+O {\it Core} contém as estruturas de dados usadas para armazenar informações a
+respeito do código-fonte sendo analisado, como a lista de módulos\footnote{o
+conceito ``módulo'' é usado como um termo abrangente para designar diferentes
+tipos de estruturas usados em desenvolvimento de software, como classes e
+arquivos fonte C}, elementos dentro de cada módulo (atributos, variáveis,
+métodos, funções), informações de dependência (chamada, herança, etc). Esta
+camada implementa a maior parte da lógica de negócio do Analizo, e não depende
+de nenhuma outra camada.
 
 A camada {\it Extractor} lida com as informaçoes de código-fonte obtidas pelas
-diferenças estratégias presente no Analizo. Os extratores pegam informaçoes do código-fonte
-e armazenam estruturas de dados na camada {\it Core}. Isto requer apenas a criação
-de uma nova subclasse para adicionar um novo tipo de extrator que faz interface
-com outra ferramenta externa ou provendo sua própria análise diretamente.
-Atualmente, existem dois extratores. Ambos fazem interface com ferramentas externas
-de análise estática de código-fonte:
+diferentes estratégias implementadas no Analizo. Os extratores obtém
+informações do código-fonte e armazenam em estruturas de dados da camada {\it
+Core}. Adicionar um novo extrator requer apenas a criação de uma nova subclasse
+que faça interface com uma ferramenta externa ou que ela própria realize análise
+de código-fonte. Atualmente existem dois extratores, ambos fazem interface
+com ferramentas externas de análise estática de código-fonte:
 
 \begin{itemize}
-  \item Analizo::Extractors::Doxyparse é uma interface para o Doxyparse, um parser
-        de código-fonte para C, C++ e Java desenvolvida por nosso grupo de pesquisa\cite{Costa2009}.
-        Doxyparse é baseado no Doxygen, um sistema de documentação multi-linguagem
-  \item Analizo::Extractors::Sloccount é uma interface para o Sloccount desenvolvido por
-        David A. Wheeler, uma ferramenta que calcula o número efetivo de linhas de código.
+
+  \item {\it Analizo::Extractors::Doxyparse} é uma interface para o Doxyparse,
+  um parser de código-fonte para C, C++ e Java desenvolvida por nosso grupo de
+  pesquisa\cite{Costa2009}. Doxyparse é baseado no
+  Doxygen\footnote{doxygen.org}, um sistema de documentação multi-linguagem.
+
+  \item {\it Analizo::Extractors::Sloccount} é uma interface para o
+  Sloccount\footnote{dwheeler.com/sloccount} desenvolvido por David A. Wheeler,
+  uma ferramenta que calcula o número efetivo de linhas de código.
+
 \end{itemize}
 
-As outras camadas intermediárias são {\it Metrics} e {\it Output}. A camada {\it Metrics}
-processa as estruturas de dados do {\it Core} para calcular métricas. Até o momento Analizo
-suporta um conjunto razoável de métricas (listadas na Seção ???). A camada {\it Output} é
-responsável por lidar com diferentes formatos de arquivos. Atualmente, apenas o formato DOT
-é implementado no Analizo para representar grafo de dependencia, mas adicionar novos formatos
-é simplesmente adicionar novas classes.
+As outras camadas intermediárias são {\it Metrics} e {\it Output}. A camada
+{\it Metrics} processa as estruturas de dados do {\it Core} para calcular
+métricas, até o momento Analizo suporta um conjunto razoável de métricas
+(listadas na Seção \ref{metricas}). A camada {\it Output} é responsável por
+lidar com diferentes formatos de arquivos. Atualmente, apenas o formato DOT é
+implementado no Analizo para representar grafo de dependencia, adicionar novos
+formatos é simplesmente adicionar novas classes nesta camada.
 
-A camada {\it Tools} fornece um conjunto de ferramentas de linha de comando que constituem
-a interface do analizo, tanto para usuários finais quanto para aplicações de mais alto nível.
-Estas ferramentas usam serviços providos pelas outras camadas: eles instanciam as estruturas
-de dados do {\it core}, um ou mais extratores, opcionalmente o processador de métricas, um
-módulo de formato de saída, e gerencia eles para prover o resultado desejado. A maioria das
-funcionalidades descritas na Secao 4 sao implementadas como Analizo tools.
+A camada {\it Tools} fornece um conjunto de ferramentas de linha de comando que
+constituem a interface do analizo, tanto para usuários finais quanto para
+aplicações de mais alto nível. Estas ferramentas usam serviços providos pelas
+outras camadas: eles instanciam as estruturas de dados do {\it Core},
+inicializam um ou mais extratores, opcionalmente executam o processador de
+métricas, instanciam um módulo de formato de saída, e gerencia todos eles para
+prover o resultado desejado. A maioria das funcionalidades descritas na Seção
+\ref{funcionalidades} são implementadas na camada {\it Tools} do Analizo.
 
-Estas ferramentas sao pensadas na filosofia UNIX: fazem uma tarefa especializada e gera saída
-que pode ser utilizada como entrada de outras ferramentas, seja do proprio Analizo ou de ferramentas
-externas. Alguma das ferramentas implementadas sobre outras ao inves de manipular explicitamente
-os internos do Analizo, e alguns sao desenhads para prover saida para aplicacoes externas como 
-programas para desenho de grafos ou visualização de dados.
+Estas ferramentas são pensadas na filosofia UNIX: fazem uma tarefa
+especializada e geram uma saída que pode ser utilizada como entrada para outras
+ferramentas, seja para o próprio Analizo ou para ferramentas externas. Alguma das
+ferramentas implementadas no Analizo são feitas consumindo saída gerada por
+outra ferramenta ao invés de manipular explicitamente os internos do Analizo,
+algumas outras são desenhadas para prover saída em formato específico para
+aplicacoes externas, como por exemplo programas para desenho de grafos ou
+visualização de dados.
 
-\section{Funcionalidades}
+\section{Funcionalidades}\label{funcionalidades}
 
 \subsection{Análise de código-fonte multi-linguagem}
 
-Atualmente Analizo suporta análise de código-fonte escrito em C, C++ e Java. Entretanto,
-pode ser estendido para suportar outras linguagens desde que use Doxyparse, que é baseado
-no Doxygen e também suporta inúmeras outras linguagens.
+Atualmente Analizo suporta análise de código-fonte escrito em C, C++ e Java.
+Entretanto, pode ser facilmente estendido para suportar outras linguagens pois
+pode potencialmente suportar as inúmeras outras linguagens suportadas pelo Doxygen.
 
-\subsection{Métricas}
+\subsection{Métricas}\label{metricas}
 
-Analizo reporta tanto métricas em nível de projeto, que é calculada para todo o projeto,
-quanto métricas em nível de módulos/classes, que é calculado individualmente para cada módulo.
+O Analizo suporta tanto métricas em nível de projeto, que é calculada para todo o projeto,
+quanto métricas em nível de módulos, que é calculado individualmente para cada módulo.
 No nível de projeto, Analizo também provê estatística descritiva básica para cada métrica em
 nível de módulo: soma, média, mediana, moda, desvio padrão, variância, skewness e kurtosis da
-distribuição, mínimo, e maximo valores. As seguintes métricas são suportadas até o momento:
+distribuição, valores mínimo e maximo. As seguintes métricas são suportadas até o momento:
 
-Project-level metrics: Total Coupling Factor, Total Lines of Code, Total number
-of methods per abstract class, Total Number of Modules/Classes, Total number
-of modules/classes with at least one defined attributes, Total number of mod-
-ules/classes with at least one defined method, Total Number of Methods.
+\begin{itemize}
 
-Module-level metrics: Afferent Connections per Class, Average Cyclomatic Com-
-plexity per Method, Average Method LOC, Average Number of Parameters per
-Method, Coupling Between Objects, Depth of Inheritance Tree, Lack of Cohesion
-of Methods, Lines of Code, Max Method LOC, Number of Attributes, Number of
-Children, Number of Methods, Number of Public Attributes, Number of Public
-Methods, Response For a Class.
+  \item Métricas em nível de projeto: Total Coupling Factor, Total Lines of
+  Code, Total number of methods per abstract class, Total Number of
+  Modules/Classes, Total number of modules/classes with at least one defined
+  attributes, Total number of modules/classes with at least one defined method,
+  Total Number of Methods.
 
-\subsection{Métricas e processamento em lote}
+  \item Métricas em nível de módulo: Afferent Connections per Class, Average
+  Cyclomatic Complexity per Method, Average Method LOC, Average Number of
+  Parameters per Method, Coupling Between Objects, Depth of Inheritance Tree,
+  Lack of Cohesion of Methods, Lines of Code, Max Method LOC, Number of
+  Attributes, Number of Children, Number of Methods, Number of Public
+  Attributes, Number of Public Methods, Response For a Class.
 
-A maioria dos estudos quantitativos em Engenharia de Software envolve aquisição de
-métricas de código-fonte de um grande número de projetos, processar cada projeto
-individualmente é pouco prático, passível de erros e difícil de repetir. Analizo pode processar
-multiplos projetos em lote e produzir arquivo de dados CSV com métricas de cada projeto,
-bem como um resumo com as métricas em nível de projeto de todos os projetos. Estes
-arquivos de dados podem ser facilmente importados em ferramentas de estatística ou planilhas para
-análise futura. Pode também ser usado para analizar várias versões de um mesmo projeto,
-em estudos sobre evolução de software.
+\end{itemize}
+
+É possível especificar que certos diretórios dentro do projeto não devem ser
+analisados, de forma que o Analizo ignora tais arquivos durante a análise e o
+cálculo de métricas.
+
+\subsection{Processamento em lote}\label{lote}
+
+A maioria dos estudos quantitativos em Engenharia de Software envolve aquisição
+de métricas de código-fonte de um grande número de projetos, processar cada
+projeto individualmente é pouco prático, passível de erros e difícil de
+repetir. Analizo pode processar multiplos projetos em lote e produzir arquivo
+de dados CSV com métricas de cada projeto, bem como um resumo com as métricas
+em nível de projeto de todos os projetos. Estes arquivos de dados podem ser
+facilmente importados em ferramentas de estatística ou planilhas para análise
+futura. Esta capacidade de processar em lote pode também ser utilizada para
+analisar várias versões de um mesmo projeto, especialmente útil em estudos
+sobre evolução de software.
+
+Este processamento em lote pode se beneficiar de processamento paralelo dando
+mais agilidade e na análise e reduzindo o tempo total de processamento.  A
+saída pode ser também escrita diretamente em um banco de dados relacional ao
+invés de gerar arquivos CSV. Outro recurso voltado à performance é um sistema
+de cache para as informações previamente calculadas, evitando repetição de
+processamento.
 
 \subsection{Histórico de métricas}
 
-Algumas vezes pesquisadores precisam processar o histórico de projetos de software de
-uma forma mais escalável. Analizo pode processar o repositório  de controle de versão e
-procer arquivo de dados CSV com valores de métricas para cada revisão onde o código-fonte
-foi alterado no projeto. Git e Subversion repositórios são suportados diretamente, repositórios
-CVS  devem ser convertidos para Git antes de forma manual.
+Algumas vezes pesquisadores precisam processar o histórico de projetos de
+software de uma forma mais escalável. Analizo pode processar repositórios de
+controle de versão e prover arquivo de dados CSV com valores de métricas para
+cada revisão onde o código-fonte foi alterado no projeto, ou pode também gravar
+os valores diretamente num banco de dados ao invés de usar arquivos CSV. Repositórios Git e
+Subversion são suportados diretamente, repositórios CVS devem ser convertidos
+para Git de forma manual.
 
-\subsection{Saída para grafo de dependencia}
+\subsection{Grafo de dependência}
 
-Analizo pode gerar saída com informações sobre dependencia entre as entidades do projeto
-em um formato adequado para processamento pelas ferramentas de desenho de grafo do Graphviz.
-A Figura ? apresenta um exemplo de grafo desenhado pela ferramenta dot do Graphviz a partir
-da saída gerada pelo Analizo.
+Analizo pode gerar saída com informações sobre dependência entre as entidades
+do projeto em um formato adequado para processamento por ferramentas de
+renderização de grafos do Graphviz\footnote{graphviz.org}. A Figura \ref{sample-graph} apresenta um
+exemplo de grafo desenhado pela ferramenta {\it dot} do Graphviz a partir da saída
+gerada pelo Analizo {\it graph}.
+
+\begin{figure}[h]
+\center
+\includegraphics[scale=0.4]{sample-graph.png}
+\caption{Exemplo de grafo de dependência}
+\label{sample-graph}
+\end{figure}
 
 \subsection{Matriz de evolução}
 
-Outra funcionalidade útil do Analizo é gerar matrizes de evolução \ref{Lanza2001}. Após
-processar cada release de um projeto (ver Seção ??), o usuário pode solicitar criação
-de uma matrix de evolução a partir de arquivos de dados individuais. A Figura ?? apresenta um
-exemplo de uma matrix produzida pelo Analizo.
+Outra funcionalidade útil do Analizo é a visualização de matrizes de evolução
+\cite{Lanza2001}. Ao processar cada release de um projeto (ver Seção
+\ref{lote}), o usuário pode solicitar a criação de uma matrix de evolução a
+partir de arquivos de dados individuais. A Figura \ref{sample-evolution-matrix}
+apresenta um exemplo de uma matrix produzida pelo Analizo.
+
+\begin{figure}[h]
+\center
+\includegraphics[scale=0.2]{sample-evolution-matrix.png}
+\caption{Exemplo de matrix de evolução}
+\label{sample-evolution-matrix}
+\end{figure}
 
 \subsection{Matriz de estrutura de projeto}
 
 Uma funcionalidade recente do Analizo é uma representação visual do
-relacionamento entre os módulos do projeto em forma de uma {\it Design
-Structure Matrix} (Matriz de estrutura de projeto) \cite{Maccormack2006}, uma
-DSM é a representação de um grafo de dependência em forma de uma matriz
-quadrada. Um exemplo na Figura ?.
+relacionamento entre os módulos do projeto em forma de uma Matriz de estrutura
+de projeto ({\it Design Structure Matrix}) \cite{Maccormack2006}, uma DSM é a
+representação de um grafo de dependência em forma de uma matriz quadrada. Um
+exemplo gerado pelo Analizo pode ser visto na Figura \ref{sample-dsm}.
+
+\begin{figure}[h]
+\center
+\includegraphics[scale=0.3]{sample-dsm.png}
+\caption{Exemplo de matrix de estrutura de projeto}
+\label{sample-dsm}
+\end{figure}
 
 \section{Uso em trabalhos de pesquisa}
 
-Analizo tem sido extensivamente usada por nosso grupo de pesquisa para suportar
-projetos de pesquisa:
+Analizo tem sido extensivamente usada por nosso grupo de pesquisa em diversos
+estudos:
 
 \begin{itemize}
 
@@ -177,7 +236,7 @@ evolução da complexidade estrutural em projetos de software livre escritos em
 C.
 
 \item \cite{Morais2009} usou a ferramenta de métricas do Analizo como backend
-para o Kalibro, um software paraavaliação de métricas.
+para o Kalibro, um software para avaliação e observação de métricas de código-fonte.
 
 \item \cite{Terceiro2010} usou o processamento de histórico de métricas para
 analizar a história completa de mudanças em 7 projetos de servidor web de
@@ -195,7 +254,7 @@ que influenciam na evolução da complexidade estrutural em projetos de software
 livres.
 
 \item \cite{Silva2012} usou o Analizo para minerar 16000 revisões de
-repositórios de projetos de software para investigar o potencil de uma nova
+repositórios de projetos de software para investigar o potencial de uma nova
 métrica chamada Lack of Concern-based Cohesion.
 
 \item \cite{Ronaldo2015} utilizou o Analizo para extrair métricas de
@@ -204,19 +263,20 @@ código-fonte de 14 versões da API do sistema Android.
 \end{itemize}
 
 A maioria destes trabalhos contribuíram com melhorias para o Analizo, fazendo
-ainda mais apropriado para pesquisas envolvendo análise de código-fonte.
+dele ainda mais apropriado para pesquisas envolvendo análise de código-fonte.
 
 \section{Considerações finais}
 
-Este artigo apresenta o Analizo, um conjunto de ferramentas para análise e visualização
-de código-fonte com suporta a C, C++ e Java. Analizo é útil tanto para pesquisadores
-trabalhando com análise de código-fonte quanto para profissionais que precisama analisar
-seu código para identificar problemas potenciais ou melhorias.
+Este artigo apresentou o Analizo, um conjunto de ferramentas para análise e
+visualização de código-fonte com suporte a C, C++ e Java. Analizo é útil tanto
+para pesquisadores trabalhando com análise de código-fonte quanto para
+profissionais que precisam analisar seus projetos em busca de
+potenciais problemas ou melhorias.
 
-Analizo é software livre, licenciado sob a GNU General Public License versão
-3. Seu código-fonte, bem como pacotes binários, manuais e tutoriais podem ser
-obtidas em http://analizo.org. Todas as ferramentas são auto-documentadas e podem
-ser consultadas como páginas de manual UNIX. Analizo é escrito em Perl.
+Analizo é software livre, licenciado sob a GNU General Public License versão 3.
+Seu código-fonte, bem como pacotes binários, manuais e tutoriais podem ser
+obtidos em http://analizo.org. Todas as ferramentas são auto-documentadas e
+podem ser consultadas como páginas de manual UNIX. Analizo é escrito em Perl.
 
 \bibliography{bibliografia}
 \appendix
