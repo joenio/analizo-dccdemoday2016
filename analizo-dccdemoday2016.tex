@@ -67,12 +67,12 @@ com ferramentas externas de análise estática de código-fonte:
 
 \begin{itemize}
 
-  \item {\it Analizo::Extractors::Doxyparse} é uma interface para o Doxyparse,
+  \item {\it Analizo::Extractor::Doxyparse} é uma interface para o Doxyparse,
   um parser de código-fonte para C, C++ e Java desenvolvida por nosso grupo de
   pesquisa\cite{Costa2009}. Doxyparse é baseado no
   Doxygen\footnote{doxygen.org}, um sistema de documentação multi-linguagem.
 
-  \item {\it Analizo::Extractors::Sloccount} é uma interface para o
+  \item {\it Analizo::Extractor::Sloccount} é uma interface para o
   Sloccount\footnote{dwheeler.com/sloccount} desenvolvido por David A. Wheeler,
   uma ferramenta que calcula o número efetivo de linhas de código.
 
@@ -97,7 +97,7 @@ prover o resultado desejado. A maioria das funcionalidades descritas na Seção
 
 Estas ferramentas são pensadas na filosofia UNIX: fazem uma tarefa
 especializada e geram uma saída que pode ser utilizada como entrada para outras
-ferramentas, seja para o próprio Analizo ou para ferramentas externas. Alguma das
+ferramentas, seja para o próprio Analizo ou para ferramentas externas. Algumas das
 ferramentas implementadas no Analizo são feitas consumindo saída gerada por
 outra ferramenta ao invés de manipular explicitamente os internos do Analizo,
 algumas outras são desenhadas para prover saída em formato específico para
@@ -122,23 +122,32 @@ distribuição, valores mínimo e maximo. As seguintes métricas são suportadas
 
 \begin{itemize}
 
-  \item Métricas em nível de projeto: Total Coupling Factor, Total Lines of
-  Code, Total number of methods per abstract class, Total Number of
-  Modules/Classes, Total number of modules/classes with at least one defined
-  attributes, Total number of modules/classes with at least one defined method,
-  Total Number of Methods.
+  \item Métricas em nível de projeto: Change Cost, Total Abstract Classes,
+  Total Coupling Factor, Total Effective Lines of Code, Total Lines of Code,
+  Methods per Abstract Class, Total Number of Modules, Total number of modules
+  with at least one defined attributes, Total number of modules with at least
+  one defined method, Total Number of Methods.
 
   \item Métricas em nível de módulo: Afferent Connections per Class, Average
-  Cyclomatic Complexity per Method, Average Method LOC, Average Number of
-  Parameters per Method, Coupling Between Objects, Depth of Inheritance Tree,
-  Lack of Cohesion of Methods, Lines of Code, Max Method LOC, Number of
-  Attributes, Number of Children, Number of Methods, Number of Public
-  Attributes, Number of Public Methods, Response For a Class.
+  Cyclomatic Complexity per Method, Average Method Lines of Code, Argument with
+  'nonnull' attribute passed null, Average Number of Parameters per Method,
+  Allocator sizeof operand mismatch, Assigned value is garbage or undefined,
+  Bad deallocator, Bad free, Coupling Between Objects, Dead assignment,
+  Divisions by zero, Double free, Depth of Inheritance Tree, Dereference of
+  null pointer, Dereference of undefined pointer value, Potential buffer
+  overflow in call to 'gets', Lack of Cohesion of Methods, Lines of Code,
+  Memory leak, Max Method LOC, Number of Attributes, Number of Children, Number
+  of Methods, Number of Public Attributes, Number of Public Methods,
+  Out-of-bound array access, Offset free, Potential insecure temporary file in
+  call 'mktemp', Response for a Class, Result of operation is garbage or
+  undefined, Return of stack variable address, Stack address stored into global
+  variable, Structural Complexity, Undefined allocation of 0 bytes,
+  Use-after-free, Uninitialized argument value.
 
 \end{itemize}
 
 É possível especificar que certos diretórios dentro do projeto não devem ser
-analisados, de forma que o Analizo ignora tais arquivos durante a análise e o
+analisados, de forma que o Analizo ignore tais arquivos durante a análise e o
 cálculo de métricas.
 
 \subsection{Processamento em lote}\label{lote}
@@ -175,9 +184,9 @@ para Git de forma manual.
 
 Analizo pode gerar saída com informações sobre dependência entre as entidades
 do projeto em um formato adequado para processamento por ferramentas de
-renderização de grafos do Graphviz\footnote{graphviz.org}. A Figura \ref{sample-graph} apresenta um
-exemplo de grafo desenhado pela ferramenta {\it dot} do Graphviz a partir da saída
-gerada pelo Analizo {\it graph}.
+renderização de grafos do Graphviz\footnote{graphviz.org}. A Figura
+\ref{sample-graph} apresenta um exemplo de grafo desenhado pela ferramenta {\it
+dot} do Graphviz a partir da saída gerada pelo Analizo {\it graph}.
 
 \begin{figure}[h]
 \center
@@ -203,7 +212,7 @@ apresenta um exemplo de uma matrix produzida pelo Analizo.
 
 \subsection{Matriz de estrutura de projeto}
 
-Uma funcionalidade recente do Analizo é uma representação visual do
+Uma funcionalidade recente do Analizo é a representação visual do
 relacionamento entre os módulos do projeto em forma de uma Matriz de estrutura
 de projeto ({\it Design Structure Matrix}) \cite{Maccormack2006}, uma DSM é a
 representação de um grafo de dependência em forma de uma matriz quadrada. Um
